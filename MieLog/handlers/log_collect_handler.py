@@ -8,3 +8,4 @@ class LogCollectHandler:
 
   def collect(self, logs):
     logging.info("The logs are %s", logs)
+    return len(logs)

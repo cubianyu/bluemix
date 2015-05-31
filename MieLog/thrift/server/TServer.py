@@ -18,13 +18,11 @@
 #
 
 import Queue
+import logging
 import os
 import sys
 import threading
 import traceback
-
-import logging
-logger = logging.getLogger(__name__)
 
 from thrift.Thrift import TProcessor
 from thrift.protocol import TBinaryProtocol
@@ -77,8 +75,6 @@ class TSimpleServer(TServer):
     self.serverTransport.listen()
     while True:
       client = self.serverTransport.accept()
-      if not client:
-        continue
       itrans = self.inputTransportFactory.getTransport(client)
       otrans = self.outputTransportFactory.getTransport(client)
       iprot = self.inputProtocolFactory.getProtocol(itrans)
@@ -88,8 +84,8 @@ class TSimpleServer(TServer):
           self.processor.process(iprot, oprot)
       except TTransport.TTransportException, tx:
         pass
-      except Exception, x:
-        logger.exception(x)
+      except Exception as x:
+        logging.exception(x)
 
       itrans.close()
       otrans.close()
@@ -107,15 +103,13 @@ class TThreadedServer(TServer):
     while True:
       try:
         client = self.serverTransport.accept()
-        if not client:
-          continue
         t = threading.Thread(target=self.handle, args=(client,))
         t.setDaemon(self.daemon)
         t.start()
       except KeyboardInterrupt:
         raise
-      except Exception, x:
-        logger.exception(x)
+      except Exception as x:
+        logging.exception(x)
 
   def handle(self, client):
     itrans = self.inputTransportFactory.getTransport(client)
@@ -127,8 +121,8 @@ class TThreadedServer(TServer):
         self.processor.process(iprot, oprot)
     except TTransport.TTransportException, tx:
       pass
-    except Exception, x:
-      logger.exception(x)
+    except Exception as x:
+      logging.exception(x)
 
     itrans.close()
     otrans.close()
@@ -154,7 +148,7 @@ class TThreadPoolServer(TServer):
         client = self.clients.get()
         self.serveClient(client)
       except Exception, x:
-        logger.exception(x)
+        logging.exception(x)
 
   def serveClient(self, client):
     """Process input/output from a client for as long as possible"""
@@ -167,8 +161,8 @@ class TThreadPoolServer(TServer):
         self.processor.process(iprot, oprot)
     except TTransport.TTransportException, tx:
       pass
-    except Exception, x:
-      logger.exception(x)
+    except Exception as x:
+      logging.exception(x)
 
     itrans.close()
     otrans.close()
@@ -180,19 +174,17 @@ class TThreadPoolServer(TServer):
         t = threading.Thread(target=self.serveThread)
         t.setDaemon(self.daemon)
         t.start()
-      except Exception, x:
-        logger.exception(x)
+      except Exception as x:
+        logging.exception(x)
 
     # Pump the socket for clients
     self.serverTransport.listen()
     while True:
       try:
         client = self.serverTransport.accept()
-        if not client:
-          continue
         self.clients.put(client)
-      except Exception, x:
-        logger.exception(x)
+      except Exception as x:
+        logging.exception(x)
 
 
 class TForkingServer(TServer):
@@ -216,14 +208,12 @@ class TForkingServer(TServer):
     def try_close(file):
       try:
         file.close()
-      except IOError, e:
-        logger.warning(e, exc_info=True)
+      except IOError as e:
+        logging.warning(e, exc_info=True)
 
     self.serverTransport.listen()
     while True:
       client = self.serverTransport.accept()
-      if not client:
-        continue
       try:
         pid = os.fork()
 
@@ -252,8 +242,8 @@ class TForkingServer(TServer):
                 self.processor.process(iprot, oprot)
             except TTransport.TTransportException, tx:
               pass
-            except Exception, e:
-              logger.exception(e)
+            except Exception as e:
+              logging.exception(e)
               ecode = 1
           finally:
             try_close(itrans)
@@ -263,8 +253,8 @@ class TForkingServer(TServer):
 
       except TTransport.TTransportException, tx:
         pass
-      except Exception, x:
-        logger.exception(x)
+      except Exception as x:
+        logging.exception(x)
 
   def collect_children(self):
     while self.children:

@@ -33,7 +33,7 @@ class TSocketBase(TTransportBase):
     else:
       return socket.getaddrinfo(self.host,
                                 self.port,
-                                self._socket_family,
+                                socket.AF_UNSPEC,
                                 socket.SOCK_STREAM,
                                 0,
                                 socket.AI_PASSIVE | socket.AI_ADDRCONFIG)
@@ -47,21 +47,19 @@ class TSocketBase(TTransportBase):
 class TSocket(TSocketBase):
   """Socket implementation of TTransport base."""
 
-  def __init__(self, host='localhost', port=9090, unix_socket=None, socket_family=socket.AF_UNSPEC):
+  def __init__(self, host='localhost', port=9090, unix_socket=None):
     """Initialize a TSocket
 
     @param host(str)  The host to connect to.
     @param port(int)  The (TCP) port to connect to.
     @param unix_socket(str)  The filename of a unix socket to connect to.
                              (host and port will be ignored.)
-    @param socket_family(int)  The socket family to use with this socket.
     """
     self.host = host
     self.port = port
     self.handle = None
     self._unix_socket = unix_socket
     self._timeout = None
-    self._socket_family = socket_family
 
   def setHandle(self, h):
     self.handle = h
@@ -109,7 +107,7 @@ class TSocket(TSocketBase):
         # freebsd and Mach don't follow POSIX semantic of recv
         # and fail with ECONNRESET if peer performed shutdown.
         # See corresponding comment and code in TSocket::read()
-        # in lib/cpp/src/transport/TSocket.cpp.
+        # in lib/cpp/thrift/transport/TSocket.cpp.
         self.close()
         # Trigger the check to raise the END_OF_FILE exception below.
         buff = ''
@@ -141,18 +139,16 @@ class TSocket(TSocketBase):
 class TServerSocket(TSocketBase, TServerTransportBase):
   """Socket implementation of TServerTransport base."""
 
-  def __init__(self, host=None, port=9090, unix_socket=None, socket_family=socket.AF_UNSPEC):
+  def __init__(self, host=None, port=9090, unix_socket=None):
     self.host = host
     self.port = port
     self._unix_socket = unix_socket
-    self._socket_family = socket_family
     self.handle = None
 
   def listen(self):
     res0 = self._resolveAddr()
-    socket_family = self._socket_family == socket.AF_UNSPEC and socket.AF_INET6 or self._socket_family
     for res in res0:
-      if res[0] is socket_family or res is res0[-1]:
+      if res[0] is socket.AF_INET6 or res is res0[-1]:
         break
 
     # We need remove the old unix socket if the file exists and

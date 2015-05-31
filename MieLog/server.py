@@ -3,12 +3,8 @@ import logging
 import threading
 import sys
 
-from thrift.transport import TSocket
-from thrift.transport import TTransport
+from thrift.server import THttpServer
 from thrift.protocol import TBinaryProtocol
-from thrift.server import TServer
-
-sys.path.append('gen-py')
 
 logging.basicConfig(level=logging.DEBUG,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -16,29 +12,36 @@ logging.basicConfig(level=logging.DEBUG,
                 filename='../logs/mie_log.log',
                 filemode='a')
 
-try:
-    from handlers.log_collect_handler import LogCollectHandler
-    from mie_log import LogCollectService
+def run_thrift_server():
+    logging.info("run_thrift_server begin")
+    try:
+        from handlers.log_collect_handler import LogCollectHandler
+        from mie_log import LogCollectService
 
-    handler = LogCollectHandler()
-    processor = LogCollectService.Processor(handler)
-    transport = TSocket.TServerSocket(port=9090)
-    tfactory = TTransport.TBufferedTransportFactory()
-    pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+        handler = LogCollectHandler()
+        processor = LogCollectService.Processor(handler)
+        port = int(os.getenv('VCAP_APP_PORT', 8000))
+        logging.info("Using port %s", port)
+        pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-    # You could do one of these for a multithreaded server
-    #server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
-    #server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
-    server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
+        # You could do one of these for a multithreaded server
+        #server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+        #server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
+        #server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
+        server = THttpServer.THttpServer(processor, ('', port), pfactory)
+        server.serve()
 
-    logging.info('Starting the thrift server...')
-    thread = threading.Thread(target = server.serve)
-    thread.daemon = True
-    thread.start()
-    logging.info('done.')
-except:
-    logging.exception("Except on starting server")
+        logging.info('Starting the thrift server...')
+        server.serve()
+        logging.info('done.')
+    except:
+        logging.exception("Except on starting server")
 
+    logging.info("run_thrift_server stop")
+
+run_thrift_server()
+
+'''
 try:
   from SimpleHTTPServer import SimpleHTTPRequestHandler as Handler
   from SocketServer import TCPServer as Server
@@ -52,10 +55,14 @@ PORT = int(os.getenv('VCAP_APP_PORT', 8000))
 os.chdir('static')
 
 httpd = Server(("", PORT), Handler)
+thread = threading.Thread(target = run_thrift_server)
+thread.daemon = True
+
 try:
   logging.info("Start serving at port %i" % PORT)
+  thread.start()
   httpd.serve_forever()
 except KeyboardInterrupt:
   pass
 httpd.server_close()
-
+'''
