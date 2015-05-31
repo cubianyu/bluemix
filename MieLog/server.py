@@ -1,21 +1,59 @@
 import os
+import logging
+import threading
+
+from thrift.transport import TSocket
+from thrift.transport import TTransport
+from thrift.protocol import TBinaryProtocol
+from thrift.server import TServer
+
+logging.basicConfig(level=logging.DEBUG,
+                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                datefmt='%a, %d %b %Y %H:%M:%S',
+                filename='../logs/mie_log.log',
+                filemode='a')
+
 try:
-  from SimpleHTTPServer import SimpleHTTPRequestHandler as Handler
-  from SocketServer import TCPServer as Server
-except ImportError:
-  from http.server import SimpleHTTPRequestHandler as Handler
-  from http.server import HTTPServer as Server
+    from handlers.log_collect_handler import LogCollectHandler
+    from mie_log import LogCollectService
 
-# Read port selected by the cloud for our application
-PORT = int(os.getenv('VCAP_APP_PORT', 8000))
-# Change current directory to avoid exposure of control files
-os.chdir('static')
+    handler = LogCollectHandler()
+    processor = LogCollectService.Processor(handler)
+    transport = TSocket.TServerSocket(port=9090)
+    tfactory = TTransport.TBufferedTransportFactory()
+    pfactory = TBinaryProtocol.TBinaryProtocolFactory()
 
-httpd = Server(("", PORT), Handler)
-try:
-  print("Start serving at port %i" % PORT)
-  httpd.serve_forever()
-except KeyboardInterrupt:
-  pass
-httpd.server_close()
+    # You could do one of these for a multithreaded server
+    #server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+    #server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
+    server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
 
+    logging.info('Starting the thrift server...')
+    thread = threading.Thread(target = server.serve)
+    thread.daemon = True
+    thread.start()
+    logging.info('done.')
+
+    try:
+      from SimpleHTTPServer import SimpleHTTPRequestHandler as Handler
+      from SocketServer import TCPServer as Server
+    except ImportError:
+      from http.server import SimpleHTTPRequestHandler as Handler
+      from http.server import HTTPServer as Server
+
+    # Read port selected by the cloud for our application
+    PORT = int(os.getenv('VCAP_APP_PORT', 8000))
+    # Change current directory to avoid exposure of control files
+    os.chdir('static')
+
+    httpd = Server(("", PORT), Handler)
+    try:
+      logging.info("Start serving at port %i" % PORT)
+      httpd.serve_forever()
+    except KeyboardInterrupt:
+      pass
+    httpd.server_close()
+
+except:
+    logging.exception("Except on starting server")
+    raise
