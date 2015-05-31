@@ -7,7 +7,6 @@
 #
 
 from thrift.Thrift import TType, TMessageType, TApplicationException
-from MieLog.mie_log.ttypes import *
 from thrift.Thrift import TProcessor
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
@@ -17,6 +16,7 @@ try:
 except:
   fastbinary = None
 
+from ttypes import *
 
 class Iface:
   def collect(self, logs):

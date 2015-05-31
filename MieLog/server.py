@@ -1,11 +1,14 @@
 import os
 import logging
 import threading
+import sys
 
 from thrift.transport import TSocket
 from thrift.transport import TTransport
 from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
+
+sys.path.append('gen-py')
 
 logging.basicConfig(level=logging.DEBUG,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
@@ -33,27 +36,26 @@ try:
     thread.daemon = True
     thread.start()
     logging.info('done.')
-
-    try:
-      from SimpleHTTPServer import SimpleHTTPRequestHandler as Handler
-      from SocketServer import TCPServer as Server
-    except ImportError:
-      from http.server import SimpleHTTPRequestHandler as Handler
-      from http.server import HTTPServer as Server
-
-    # Read port selected by the cloud for our application
-    PORT = int(os.getenv('VCAP_APP_PORT', 8000))
-    # Change current directory to avoid exposure of control files
-    os.chdir('static')
-
-    httpd = Server(("", PORT), Handler)
-    try:
-      logging.info("Start serving at port %i" % PORT)
-      httpd.serve_forever()
-    except KeyboardInterrupt:
-      pass
-    httpd.server_close()
-
 except:
     logging.exception("Except on starting server")
-    raise
+
+try:
+  from SimpleHTTPServer import SimpleHTTPRequestHandler as Handler
+  from SocketServer import TCPServer as Server
+except ImportError:
+  from http.server import SimpleHTTPRequestHandler as Handler
+  from http.server import HTTPServer as Server
+
+# Read port selected by the cloud for our application
+PORT = int(os.getenv('VCAP_APP_PORT', 8000))
+# Change current directory to avoid exposure of control files
+os.chdir('static')
+
+httpd = Server(("", PORT), Handler)
+try:
+  logging.info("Start serving at port %i" % PORT)
+  httpd.serve_forever()
+except KeyboardInterrupt:
+  pass
+httpd.server_close()
+

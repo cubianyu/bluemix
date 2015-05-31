@@ -1,3 +1,5 @@
+namespace py mie_log
+
 enum mie_log_type {
   RECOMMEND = 0,
   VIEW = 1,
