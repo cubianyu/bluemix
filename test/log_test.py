@@ -26,6 +26,12 @@ try:
   # Create a client to use the protocol encoder
   client = LogCollectService.Client(protocol)
 
+  '''
+	   TTransport transport = new THttpClient("http://mielog.mybluemix.net/");
+      TProtocol protocol = new  TBinaryProtocol(transport);
+
+      LogCollectService.Client client = new LogCollectService.Client(protocol);
+  '''
   # Connect!
   transport.open()
 
