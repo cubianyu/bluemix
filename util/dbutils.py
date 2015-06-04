@@ -3,7 +3,7 @@ import logging, os
 
 db = None
 log_id = 0
-
+"""
 def save_log(log):
     global log_id
     global db
@@ -15,16 +15,43 @@ def save_log(log):
     db.set('log_table:%d:type' % log_id, log['type'])
     db.set('log_table:%d:mark' % log_id, log['mark'])
     db.set('log_table:%d:timestamp' % log_id, log['timestamp'])
+"""
+def set_user_type_info(user_id, stype, mark, amount):
+    db.set('%d:%d:mark' % (user_id, stype), str(mark))
+    db.set('%d:%d:amount' % (user_id, stype), str(amount))
+    
+def get_user_type_info(user_id, stype):
+    return (db.get('%d:%d:mark' % (user_id, stype)), db.get('%d:%d:amount' % (user_id, stype)))
+    
+def set_user_type_weight(user_id, stype, weight):
+    db.set('%s:%s:weight' % (user_id, stype), str(weight))
 
-    #update user_type_table
-    db.set('user_type_table:%s' )
+def get_user_type_weight(user_id, stype, weight):
+    return float(db.get('%s:%s:weight' % (user_id, stype))))
+    
+def set_business_type_mark(business_id, stype, mark):
+    db.set('%s:%s:mark' % (business_id, stype), mark)
 
-    #update user_type_weight_table
-    db.set()
+def get_business_type_mark(business_id, stype):
+    float(db.get('%s:%s:mark' % (business_id, stype)))
 
-    #update business_type_table
-    db.set()
+def set_business(business_id, keys):
+    db.set(str(business_id), keys)
+    
+def get_business(business_id):
+    return db.get(str(business_id))
 
+def set_business_groupon(business_id, groupon):
+    db.set(str(business_id), groupon)
+
+def get_business_groupon(business_id):
+    return db.get(str(business_id))
+
+def set_business_district_geo(district, geo_id, business_id):
+    db.set('%s:%d' % (district, geo_id), business_id)
+
+def get_business_district_geo(district, geo_id):
+    return db.get('%s:%d' % (district, geo_id))
 
 if __name__ == '__main__':
     db = redis.Redis('127.0.0.1', '6379')
