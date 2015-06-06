@@ -2,19 +2,27 @@ import os
 import logging
 import time
 import threading
-from mqutils import MQUtil
+from mqutils import MQService, MQUtil
+from configuration import env
+
+from thrift.server import THttpServer
+from thrift.protocol import TBinaryProtocol
+
+from recommend_controller import RecommendController
 
 logging.basicConfig(level=logging.DEBUG,
                 format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                 datefmt='%a, %d %b %Y %H:%M:%S',
-                filename='../logs/mie_log.log',
+                filename='../logs/mie_recommend.log',
                 filemode='a')
+
+url = None
 try:
-  from SimpleHTTPServer import SimpleHTTPRequestHandler as Handler
-  from SocketServer import TCPServer as Server
-except ImportError:
-  from http.server import SimpleHTTPRequestHandler as Handler
-  from http.server import HTTPServer as Server
+  url = env["cloudamqp"][0]["credentials"]["uri"]
+  MQUtil = MQService(url, "mie_log")
+except:
+  logging.exception("Failed to get connection url")
+
 
 def run():
     while 1:
@@ -23,23 +31,35 @@ def run():
 
         time.sleep(10)
 
-# Read port selected by the cloud for our application
-PORT = int(os.getenv('VCAP_APP_PORT', 8000))
+def run_thrift_server():
+    logging.info("run_thrift_server begin")
+    try:
+        from MieRecommend import RecommendService
 
-# Change current directory to avoid exposure of control files
-os.chdir('static')
+        handler = RecommendController()
+        processor = RecommendService.Processor(handler)
+        port = int(os.getenv('VCAP_APP_PORT', 8000))
+        logging.info("Using port %s", port)
+        pfactory = TBinaryProtocol.TBinaryProtocolFactory()
+
+        # You could do one of these for a multithreaded server
+        #server = TServer.TSimpleServer(processor, transport, tfactory, pfactory)
+        #server = TServer.TThreadedServer(processor, transport, tfactory, pfactory)
+        #server = TServer.TThreadPoolServer(processor, transport, tfactory, pfactory)
+        server = THttpServer.THttpServer(processor, ('', port), pfactory)
+        server.serve()
+
+        logging.info('Starting the thrift server...')
+        server.serve()
+        logging.info('done.')
+    except:
+        logging.exception("Except on starting server")
+
+    logging.info("run_thrift_server stop")
 
 thread = threading.Thread(target = run)
 thread.daemon = True
 thread.start()
 logging.info("Starting the thread")
 
-httpd = Server(("", PORT), Handler)
-try:
-  logging.info("Start serving at port %i", PORT)
-  httpd.serve_forever()
-except KeyboardInterrupt:
-  pass
-httpd.server_close()
-
-
+run_thrift_server()

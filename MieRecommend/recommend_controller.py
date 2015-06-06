@@ -4,7 +4,6 @@ import logging
 
 from DAO.business import Business
 from DAO.user import User
-from DAO.recommend import Recommend
 from DAO.setting import Setting
 from DAO.logger import Logger
 from DAO.type import type_map
@@ -16,8 +15,8 @@ class RecommendController(object):
         pass
 
     @classmethod
-    def recommend(cls, user_id, device_id, geo_info, mode):
-        user = User.get_user(user_id, device_id) # TODO
+    def recommend(cls, user_id, geo_info, mode):
+        user = User.get_user(user_id, None) # TODO
         setting = Setting.get_setting(user) # TODO
         businesses = Business.get_by_geo(geo_info, mode)
         businesses = RecommendController.filter_by_setting(businesses, setting, mode)
@@ -29,7 +28,7 @@ class RecommendController(object):
     def filter_by_setting(cls, businesses, setting, mode):
         score_list = []
         for busi in businesses:
-            score = Recommend.score_business(busi, setting, mode)
+            score = RecommendController.score_business(busi, setting, mode)
             logging.info("The score for business[%s] is %s", busi, score)
             score_list.append((score, busi))
 
