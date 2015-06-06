@@ -1,8 +1,10 @@
+#coding:utf-8
 __author__ = 'TomasLiu'
 
 import logging
 import threading
 from setting import Setting
+import redis
 
 #Need to be fixed
 LONGITUDE_SEGMENT = 0.3
@@ -34,14 +36,14 @@ class Business(object):
 
                 #Then the dish type, the mark can only be 0 or 1
                 business_mode = 0
-                business_mode |= (setting.get(1, ("", 0))[1]) #´¨²Ë
-                business_mode |= (setting.get(4, ("", 0))[1] << 1) #ÔÁ²Ë
-                business_mode |= (setting.get(69, ("", 0))[1] << 2) #Î÷±±
-                business_mode |= (setting.get(36, ("", 0))[1] << 3) #¶«ÄÏÑÇ
-                business_mode |= (setting.get(22, ("", 0))[1] << 4) #¶«±±
-                business_mode |= (setting.get(12, ("", 0))[1] << 5) #»ð¹ø
-                business_mode |= (setting.get(28, ("", 0))[1] << 6) #Î÷²Í
-                business_mode |= (setting.get(71, ("", 0))[1] << 7) #¿§·ÈÌü
+                business_mode |= (setting.get(1, ("", 0))[1]) #Â´Â¨Â²Ã‹
+                business_mode |= (setting.get(4, ("", 0))[1] << 1) #Ã”ÃÂ²Ã‹
+                business_mode |= (setting.get(69, ("", 0))[1] << 2) #ÃŽÃ·Â±Â±
+                business_mode |= (setting.get(36, ("", 0))[1] << 3) #Â¶Â«Ã„ÃÃ‘Ã‡
+                business_mode |= (setting.get(22, ("", 0))[1] << 4) #Â¶Â«Â±Â±
+                business_mode |= (setting.get(12, ("", 0))[1] << 5) #Â»Ã°Â¹Ã¸
+                business_mode |= (setting.get(28, ("", 0))[1] << 6) #ÃŽÃ·Â²Ã
+                business_mode |= (setting.get(71, ("", 0))[1] << 7) #Â¿Â§Â·ÃˆÃŒÃ¼
 
                 busi.mode = business_mode
 
@@ -76,3 +78,16 @@ class Business(object):
 
         remove_list = []
         return businesses
+    
+    @classmethod
+	def get_ids_by_geo(cls, city, district, segment):
+		longitude = segment[0]
+		latitude = segment[1]
+		#return a set
+		return db.smembers('%d,%d' % (longitude,latitude))
+		
+if __name__ == '__main__':
+	db = redis.Redis(host='pub-redis-15138.dal-05.1.sl.garantiadata.com', port=15138, password='Xrm9AB0pv9XlQpEK')
+	assert db != None
+	res = Business.get_ids_by_geo('a', 'b', (116,39))
+	print res
