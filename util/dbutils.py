@@ -13,9 +13,9 @@ assert db != None
 
 f = open('business_data.txt')
 try:
-	business_data = f.read()
+    business_data = f.read()
 finally:
-	f.close()
+    f.close()
 
 #print(business_data)
 
@@ -26,28 +26,28 @@ business_obj = json.loads(business_data)
 #print(json.dumps(business_obj["businesses"][0]))
 
 def save_business_info(business_list):
-	for item in business_list:
+    for item in business_list:
 #		print(type(item["business_id"]))
-		db.set(str(item["business_id"]), json.dumps(item))
-		
-		longitude_int = int(item["longitude"])
-		latitude_int = int(item["latitude"])
-		db.sadd('%d,%d' % (longitude_int,latitude_int), item["business_id"])
+        db.set(str(item["business_id"]), json.dumps(item))
+
+        longitude_int = int(item["longitude"])
+        latitude_int = int(item["latitude"])
+        db.sadd('%d,%d' % (longitude_int,latitude_int), item["business_id"])
 
 def get_ids_by_geo(longitude, latitude):
-	#return a set
-	return db.smembers('%d,%d' % (longitude,latitude))
+    #return a set
+    return db.smembers('%d,%d' % (longitude,latitude))
 
 def get_business_setting(business_id):
-	#return a dict
-	return json.loads(db.get(str(business_id)))
+    #return a dict
+    return json.loads(db.get(str(business_id)))
 
 save_business_info(business_obj["businesses"])
 res = get_ids_by_geo(116,39)
 
 
 def get_user_info(userid):
-    return (userid, db.get('%d:deviceid' %s userid), db.get('%d:name' %s userid), db.get('%d:dpid' %s userid)))
+    return (userid, db.get('%d:deviceid' % userid), db.get('%d:name' % userid), db.get('%d:dpid' % userid))
 
 def get_user_type_info(user_id, stype):
     return (db.get('%d:%d:mark' % (user_id, stype)), db.get('%d:%d:amount' % (user_id, stype)))
@@ -81,8 +81,8 @@ def set_user_type_weight(user_id, stype, weight):
     db.set('%s:%s:weight' % (user_id, stype), str(weight))
 
 def get_user_type_weight(user_id, stype, weight):
-    return float(db.get('%s:%s:weight' % (user_id, stype))))
-    
+    return float(db.get('%s:%s:weight' % (user_id, stype)))
+
 def set_business_type_mark(business_id, stype, mark):
     db.set('%s:%s:mark' % (business_id, stype), mark)
 
