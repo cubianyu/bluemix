@@ -4,6 +4,47 @@ import logging, os
 db = None
 log_id = 0
 MAX_USER_TYPE=10
+import os,sys,logging, traceback, json,string
+import redis
+
+
+db = redis.Redis(host = '127.0.0.1', port=int('6379'))
+assert db != None
+
+f = open('business_data.txt')
+try:
+	business_data = f.read()
+finally:
+	f.close()
+
+#print(business_data)
+
+business_obj = json.loads(business_data)
+#print(len(business_obj["businesses"]))
+
+#print(business_obj["businesses"][0])
+#print(json.dumps(business_obj["businesses"][0]))
+
+def save_business_info(business_list):
+	for item in business_list:
+#		print(type(item["business_id"]))
+		db.set(str(item["business_id"]), json.dumps(item))
+		
+		longitude_int = int(item["longitude"])
+		latitude_int = int(item["latitude"])
+		db.sadd('%d,%d' % (longitude_int,latitude_int), item["business_id"])
+
+def get_ids_by_geo(longitude, latitude):
+	#return a set
+	return db.smembers('%d,%d' % (longitude,latitude))
+
+def get_business_setting(business_id):
+	#return a dict
+	return json.loads(db.get(str(business_id)))
+
+save_business_info(business_obj["businesses"])
+res = get_ids_by_geo(116,39)
+
 
 def get_user_info(userid):
     return (userid, db.get('%d:deviceid' %s userid), db.get('%d:name' %s userid), db.get('%d:dpid' %s userid)))
