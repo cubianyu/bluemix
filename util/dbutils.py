@@ -3,6 +3,20 @@ import logging, os
 
 db = None
 log_id = 0
+MAX_USER_TYPE=10
+
+def get_user_info(userid):
+    return (userid, db.get('%d:deviceid' %s userid), db.get('%d:name' %s userid), db.get('%d:dpid' %s userid)))
+
+def get_user_type_info(user_id, stype):
+    return (db.get('%d:%d:mark' % (user_id, stype)), db.get('%d:%d:amount' % (user_id, stype)))
+
+def get_user_setting(userid):
+    res = {}
+    for i in range(0, MAX_USER_TYPE):
+        res[i] = get_user_type_info(userid, i)
+        
+    return res
 """
 def save_log(log):
     global log_id
@@ -20,8 +34,7 @@ def set_user_type_info(user_id, stype, mark, amount):
     db.set('%d:%d:mark' % (user_id, stype), str(mark))
     db.set('%d:%d:amount' % (user_id, stype), str(amount))
     
-def get_user_type_info(user_id, stype):
-    return (db.get('%d:%d:mark' % (user_id, stype)), db.get('%d:%d:amount' % (user_id, stype)))
+
     
 def set_user_type_weight(user_id, stype, weight):
     db.set('%s:%s:weight' % (user_id, stype), str(weight))
