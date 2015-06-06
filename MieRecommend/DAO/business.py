@@ -36,14 +36,14 @@ class Business(object):
 
                 #Then the dish type, the mark can only be 0 or 1
                 business_mode = 0
-                business_mode |= (setting.get(1, ("", 0))[1]) #´¨²Ë
-                business_mode |= (setting.get(4, ("", 0))[1] << 1) #ÔÁ²Ë
-                business_mode |= (setting.get(69, ("", 0))[1] << 2) #Î÷±±
-                business_mode |= (setting.get(36, ("", 0))[1] << 3) #¶«ÄÏÑÇ
-                business_mode |= (setting.get(22, ("", 0))[1] << 4) #¶«±±
-                business_mode |= (setting.get(12, ("", 0))[1] << 5) #»ð¹ø
-                business_mode |= (setting.get(28, ("", 0))[1] << 6) #Î÷²Í
-                business_mode |= (setting.get(71, ("", 0))[1] << 7) #¿§·ÈÌü
+                business_mode |= (setting.get(1, ("", 0))[1]) #麓篓虏脣
+                business_mode |= (setting.get(4, ("", 0))[1] << 1) #脭脕虏脣
+                business_mode |= (setting.get(69, ("", 0))[1] << 2) #脦梅卤卤
+                business_mode |= (setting.get(36, ("", 0))[1] << 3) #露芦脛脧脩脟
+                business_mode |= (setting.get(22, ("", 0))[1] << 4) #露芦卤卤
+                business_mode |= (setting.get(12, ("", 0))[1] << 5) #禄冒鹿酶
+                business_mode |= (setting.get(28, ("", 0))[1] << 6) #脦梅虏脥
+                business_mode |= (setting.get(71, ("", 0))[1] << 7) #驴搂路脠脤眉
 
                 busi.mode = business_mode
 
@@ -78,16 +78,16 @@ class Business(object):
 
         remove_list = []
         return businesses
-    
+
     @classmethod
-	def get_ids_by_geo(cls, city, district, segment):
-		longitude = segment[0]
-		latitude = segment[1]
-		#return a set
-		return db.smembers('%d,%d' % (longitude,latitude))
-		
+    def get_ids_by_geo(cls, city, district, segment):
+        longitude = segment[0]
+        latitude = segment[1]
+        #return a set
+        return db.smembers('%d,%d' % (longitude,latitude))
+
 if __name__ == '__main__':
-	db = redis.Redis(host='pub-redis-15138.dal-05.1.sl.garantiadata.com', port=15138, password='Xrm9AB0pv9XlQpEK')
-	assert db != None
-	res = Business.get_ids_by_geo('a', 'b', (116,39))
-	print res
+    db = redis.Redis(host='pub-redis-15138.dal-05.1.sl.garantiadata.com', port=15138, password='Xrm9AB0pv9XlQpEK')
+    assert db <> None
+    res = Business.get_ids_by_geo('a', 'b', (116,39))
+    print res
