@@ -76,6 +76,7 @@ type_map = {
     68: ("鲁菜", CATEGREY_WEIGHT),
     69: ("西北菜", CATEGREY_WEIGHT),
     70: ("烧烤", CATEGREY_WEIGHT),
+    71: ("咖啡厅", CATEGREY_WEIGHT),
 
     101: ("备受好评", TYPE_SCOER_WEIGET),
     102: ("服务热情", TYPE_SCOER_WEIGET),
