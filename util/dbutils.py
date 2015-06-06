@@ -28,14 +28,19 @@ business_obj = json.loads(business_data)
 def save_business_info(business_list):
 	for item in business_list:
 #		print(type(item["business_id"]))
-#		db.set(str(item["business_id"]), json.dumps(item))
+		db.set(str(item["business_id"]), json.dumps(item))
 		
 		longitude_int = int(item["longitude"])
 		latitude_int = int(item["latitude"])
 		db.sadd('%d,%d' % (longitude_int,latitude_int), item["business_id"])
 
 def get_ids_by_geo(longitude, latitude):
+	#return a set
 	return db.smembers('%d,%d' % (longitude,latitude))
+
+def get_get_business_setting(business_id):
+	#return a dict
+	return json.loads(db.get(str(business_id)))
 
 save_business_info(business_obj["businesses"])
 res = get_ids_by_geo(116,39)
