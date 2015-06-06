@@ -38,7 +38,7 @@ def get_ids_by_geo(longitude, latitude):
 	#return a set
 	return db.smembers('%d,%d' % (longitude,latitude))
 
-def get_get_business_setting(business_id):
+def get_business_setting(business_id):
 	#return a dict
 	return json.loads(db.get(str(business_id)))
 
