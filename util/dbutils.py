@@ -47,7 +47,7 @@ res = get_ids_by_geo(116,39)
 
 
 def get_user_info(userid):
-    return (userid, db.get('%d:deviceid' %s userid), db.get('%d:name' %s userid), db.get('%d:dpid' %s userid)))
+    return (userid, db.get('%d:deviceid' % userid), db.get('%d:name' % userid), db.get('%d:dpid' % userid))
 
 def get_user_type_info(user_id, stype):
     return (db.get('%d:%d:mark' % (user_id, stype)), db.get('%d:%d:amount' % (user_id, stype)))
@@ -81,8 +81,8 @@ def set_user_type_weight(user_id, stype, weight):
     db.set('%s:%s:weight' % (user_id, stype), str(weight))
 
 def get_user_type_weight(user_id, stype, weight):
-    return float(db.get('%s:%s:weight' % (user_id, stype))))
-    
+    return float(db.get('%s:%s:weight' % (user_id, stype)))
+
 def set_business_type_mark(business_id, stype, mark):
     db.set('%s:%s:mark' % (business_id, stype), mark)
 
