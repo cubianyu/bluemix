@@ -1,6 +1,6 @@
 namespace py mie_log
 
-enum mie_log_type {
+enum LogType {
   RECOMMEND = 0,
   VIEW = 1,
   REJECT = 2,
@@ -10,12 +10,14 @@ enum mie_log_type {
   PRICING = 6
 }
 
-struct mie_log_struct {
+struct Log {
   1: i64 business_id
-  2: mie_log_type type
-  3: double mark
+  2: i64 user_id
+  3: LogType type
+  4: double mark
+  5: i64 timestamp
 }
 
 service LogCollectService {
-  i32 collect(1: list<mie_log_struct> logs)
+  i32 collect(1: list<Log> logs)
 }

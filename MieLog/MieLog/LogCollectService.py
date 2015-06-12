@@ -18,12 +18,10 @@ except:
 
 
 class Iface:
-  def recommend(self, user_id, geo_info, mode):
+  def collect(self, logs):
     """
     Parameters:
-     - user_id
-     - geo_info
-     - mode
+     - logs
     """
     pass
 
@@ -35,46 +33,42 @@ class Client(Iface):
       self._oprot = oprot
     self._seqid = 0
 
-  def recommend(self, user_id, geo_info, mode):
+  def collect(self, logs):
     """
     Parameters:
-     - user_id
-     - geo_info
-     - mode
+     - logs
     """
-    self.send_recommend(user_id, geo_info, mode)
-    return self.recv_recommend()
+    self.send_collect(logs)
+    return self.recv_collect()
 
-  def send_recommend(self, user_id, geo_info, mode):
-    self._oprot.writeMessageBegin('recommend', TMessageType.CALL, self._seqid)
-    args = recommend_args()
-    args.user_id = user_id
-    args.geo_info = geo_info
-    args.mode = mode
+  def send_collect(self, logs):
+    self._oprot.writeMessageBegin('collect', TMessageType.CALL, self._seqid)
+    args = collect_args()
+    args.logs = logs
     args.write(self._oprot)
     self._oprot.writeMessageEnd()
     self._oprot.trans.flush()
 
-  def recv_recommend(self, ):
+  def recv_collect(self, ):
     (fname, mtype, rseqid) = self._iprot.readMessageBegin()
     if mtype == TMessageType.EXCEPTION:
       x = TApplicationException()
       x.read(self._iprot)
       self._iprot.readMessageEnd()
       raise x
-    result = recommend_result()
+    result = collect_result()
     result.read(self._iprot)
     self._iprot.readMessageEnd()
     if result.success is not None:
       return result.success
-    raise TApplicationException(TApplicationException.MISSING_RESULT, "recommend failed: unknown result");
+    raise TApplicationException(TApplicationException.MISSING_RESULT, "collect failed: unknown result");
 
 
 class Processor(Iface, TProcessor):
   def __init__(self, handler):
     self._handler = handler
     self._processMap = {}
-    self._processMap["recommend"] = Processor.process_recommend
+    self._processMap["collect"] = Processor.process_collect
 
   def process(self, iprot, oprot):
     (name, type, seqid) = iprot.readMessageBegin()
@@ -91,13 +85,13 @@ class Processor(Iface, TProcessor):
       self._processMap[name](self, seqid, iprot, oprot)
     return True
 
-  def process_recommend(self, seqid, iprot, oprot):
-    args = recommend_args()
+  def process_collect(self, seqid, iprot, oprot):
+    args = collect_args()
     args.read(iprot)
     iprot.readMessageEnd()
-    result = recommend_result()
-    result.success = self._handler.recommend(args.user_id, args.geo_info, args.mode)
-    oprot.writeMessageBegin("recommend", TMessageType.REPLY, seqid)
+    result = collect_result()
+    result.success = self._handler.collect(args.logs)
+    oprot.writeMessageBegin("collect", TMessageType.REPLY, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -105,25 +99,19 @@ class Processor(Iface, TProcessor):
 
 # HELPER FUNCTIONS AND STRUCTURES
 
-class recommend_args:
+class collect_args:
   """
   Attributes:
-   - user_id
-   - geo_info
-   - mode
+   - logs
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.I64, 'user_id', None, None, ), # 1
-    (2, TType.STRUCT, 'geo_info', (GeoInfo, GeoInfo.thrift_spec), None, ), # 2
-    (3, TType.STRUCT, 'mode', (Mode, Mode.thrift_spec), None, ), # 3
+    (1, TType.LIST, 'logs', (TType.STRUCT,(Log, Log.thrift_spec)), None, ), # 1
   )
 
-  def __init__(self, user_id=None, geo_info=None, mode=None,):
-    self.user_id = user_id
-    self.geo_info = geo_info
-    self.mode = mode
+  def __init__(self, logs=None,):
+    self.logs = logs
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -135,20 +123,14 @@ class recommend_args:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.I64:
-          self.user_id = iprot.readI64();
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRUCT:
-          self.geo_info = GeoInfo()
-          self.geo_info.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRUCT:
-          self.mode = Mode()
-          self.mode.read(iprot)
+        if ftype == TType.LIST:
+          self.logs = []
+          (_etype3, _size0) = iprot.readListBegin()
+          for _i4 in xrange(_size0):
+            _elem5 = Log()
+            _elem5.read(iprot)
+            self.logs.append(_elem5)
+          iprot.readListEnd()
         else:
           iprot.skip(ftype)
       else:
@@ -160,18 +142,13 @@ class recommend_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('recommend_args')
-    if self.user_id is not None:
-      oprot.writeFieldBegin('user_id', TType.I64, 1)
-      oprot.writeI64(self.user_id)
-      oprot.writeFieldEnd()
-    if self.geo_info is not None:
-      oprot.writeFieldBegin('geo_info', TType.STRUCT, 2)
-      self.geo_info.write(oprot)
-      oprot.writeFieldEnd()
-    if self.mode is not None:
-      oprot.writeFieldBegin('mode', TType.STRUCT, 3)
-      self.mode.write(oprot)
+    oprot.writeStructBegin('collect_args')
+    if self.logs is not None:
+      oprot.writeFieldBegin('logs', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.logs))
+      for iter6 in self.logs:
+        iter6.write(oprot)
+      oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -191,14 +168,14 @@ class recommend_args:
   def __ne__(self, other):
     return not (self == other)
 
-class recommend_result:
+class collect_result:
   """
   Attributes:
    - success
   """
 
   thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT,(Recommend, Recommend.thrift_spec)), None, ), # 0
+    (0, TType.I32, 'success', None, None, ), # 0
   )
 
   def __init__(self, success=None,):
@@ -214,14 +191,8 @@ class recommend_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype24, _size21) = iprot.readListBegin()
-          for _i25 in xrange(_size21):
-            _elem26 = Recommend()
-            _elem26.read(iprot)
-            self.success.append(_elem26)
-          iprot.readListEnd()
+        if ftype == TType.I32:
+          self.success = iprot.readI32();
         else:
           iprot.skip(ftype)
       else:
@@ -233,13 +204,10 @@ class recommend_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('recommend_result')
+    oprot.writeStructBegin('collect_result')
     if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter27 in self.success:
-        iter27.write(oprot)
-      oprot.writeListEnd()
+      oprot.writeFieldBegin('success', TType.I32, 0)
+      oprot.writeI32(self.success)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

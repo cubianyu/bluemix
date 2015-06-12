@@ -1,4 +1,12 @@
 import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG,
+                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
+                datefmt='%a, %d %b %Y %H:%M:%S',
+                filename='../logs/mie_collect.log',
+                filemode='w')
+
 try:
   from SimpleHTTPServer import SimpleHTTPRequestHandler as Handler
   from SocketServer import TCPServer as Server
@@ -13,7 +21,7 @@ os.chdir('static')
 
 httpd = Server(("", PORT), Handler)
 try:
-  print("Start serving at port %i" % PORT)
+  logging.info("Start serving at port %i" % PORT)
   httpd.serve_forever()
 except KeyboardInterrupt:
   pass

@@ -50,7 +50,8 @@ class MQService(object):
 
   def consume(self, callback):
     self.__channel.basic_consume(callback, queue=self.__queue, no_ack=True)
-    self.__thread = threading.Thread(target = self.__channel.start_consuming)
-    self.__thread.daemon = True
-    self.__thread.start()
+    if self.__thread is None:
+      self.__thread = threading.Thread(target = self.__channel.start_consuming)
+      self.__thread.daemon = True
+      self.__thread.start()
 

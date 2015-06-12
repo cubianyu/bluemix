@@ -14,20 +14,19 @@ struct GroupOn {
 }
 
 struct Recommend {
-  1: i64 id,
-  2: i64 dp_business_id,
-  3: string name,
-  4: string pic_url,
-  5: i32 average_cost,
-  6: string address,
-  7: list<string> tels,
-  8: double longitude,
-  9: double latitude,
-  10: i32 distance,
-  11: double recommend_mark,
-  12: list<string> recommend_reason,
-  13: list<Dish> favourite_dishes,
-  14: list<GroupOn> groupon
+  1: i64 business_id,
+  2: string name,
+  3: string photo_url,
+  4: string telephone
+  5: string address,
+  6: double longitude,
+  7: double latitude,
+  8: i32 distance,
+  9: i32 avg_price
+  10: double recommend_mark,
+  11: list<string> recommend_reason,
+  12: list<Dish> favourite_dishes,
+  13: list<GroupOn> deals
 }
 
 struct GeoInfo{

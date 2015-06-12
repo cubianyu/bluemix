@@ -7,27 +7,40 @@ MAX_USER_TYPE=10
 import os,sys,logging, traceback, json,string
 import redis
 
-from configuration import env
+DBUtil = None
 
-redis_creds = None
-try:
-  redis_creds = env['rediscloud'][0]['credentials']
-except:
-  logging.exception("Failed to get connection url")
+class DB(object):
+    def __init__(self, host, port, passwd):
+        self.__host = host
+        self.__port = port
+        self.__passwd = passwd
+        self.__redis = redis.Redis(host=host, port=port, password=passwd)
 
-db = None
+    def set(self, table, key, value):
+        self.__redis.set(self.__to_key(table, key), str(value))
 
-if redis_creds:
-    db = redis.Redis(host = redis_creds['hostname'], port=int(redis_creds['port']), password=redis_creds['password'])
+    def sadd(self, table, key, value):
+        self.__redis.sadd(self.__to_key(table, key), str(value))
 
-def save_business_info(business_list):
-    for item in business_list:
-        #print(type(item["business_id"]))
-        db.set(str(item["business_id"]), json.dumps(item))
+    def get(self, table, key):
+        result = self.__redis.get(self.__to_key(table, key))
+        if result is not None:
+            return eval(result)
+        return None
 
-        longitude_int = int(item["longitude"])
-        latitude_int = int(item["latitude"])
-        db.sadd('%d,%d' % (longitude_int,latitude_int), item["business_id"])
+    def smembers(self, table, key):
+        return self.__redis.smembers(self.__to_key(table, key))
+
+    def __to_key(self, table, key):
+        key_str = table + "#"
+        if type(key) == tuple:
+            for k in key:
+                key_str += str(k) + "_"
+        else:
+            key_str += str(key) + "_"
+        return key_str
+
+
 
 def get_ids_by_geo(longitude, latitude):
     #return a set
@@ -84,5 +97,3 @@ def set_business_district_geo(district, geo_id, business_id):
 def get_business_district_geo(district, geo_id):
     return db.get('%s:%d' % (district, geo_id))
 
-
-print get_ids_by_geo(116,39)

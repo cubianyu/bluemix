@@ -13,12 +13,12 @@ class Logger(object):
     def to_logs(cls, businesses):
         logs = []
         for busi in businesses:
-            log = Log(busi.id, LogType.RECOMMEND, timestamp=time.time())
+            log = Log(busi["business_id"], LogType.RECOMMEND, timestamp=time.time())
             logs.append(log)
         return logs
 
     @classmethod
-    def append_to_queue(logs):
+    def append_to_queue(cls, logs):
         if MQUtil:
             MQUtil.post(logs)
             logging.info("After post event for logs, size is %s", len(logs))
